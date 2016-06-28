@@ -1,0 +1,23 @@
+{
+  "name": "sort",
+  "description": "Sorting Algorithms",
+  "main": "server.js",
+  "authors": [
+    "Vincent Jaouen <vincent@dowza.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "sorting"
+  ],
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react": "^15.1.0"
+  }
+}
