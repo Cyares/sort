@@ -25,5 +25,8 @@ module.exports = {
             { test: /\.css$/, loader: 'style!css' },
             { test: /\.jsx?/, include: APP_DIR, loader: 'babel' }
         ]
+    },
+    sassLoader: {
+        includePaths: [path.resolve(__dirname, "./src/client/style")]
     }
 };
