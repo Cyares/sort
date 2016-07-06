@@ -1,5 +1,6 @@
 import React from 'react';
 import {dispatch} from './SortDispatcher';
+import Sorter from './Sorter';
 
 class AlgoChoice extends React.Component {
     
@@ -20,11 +21,11 @@ class AlgoChoice extends React.Component {
             <div>
                 <select value={ this.props.algo }
                     onChange={ this.changeAlgo }>
-                  <option value="bucket">Bucket Sort</option>
-                  <option value="bubble">Bubble Sort</option>
-                  <option value="selection">Selection Sort</option>
-                  <option value="insertion">Insertion Sort</option>
-                  <option value="merge">Merge Sort</option>
+                  <option value={ Sorter.BUCKET }>Bucket Sort</option>
+                  <option value={ Sorter.BUBBLE }>Bubble Sort</option>
+                  <option value={ Sorter.SELECTION }>Selection Sort</option>
+                  <option value={ Sorter.INSERTION }>Insertion Sort</option>
+                  <option value={ Sorter.MERGE }>Merge Sort</option>
                 </select>
                 <button onClick={ this.sort }>Sort</button>
             </div>

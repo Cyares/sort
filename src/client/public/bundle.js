@@ -58,7 +58,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	__webpack_require__(194);
+	__webpack_require__(196);
 
 	(0, _reactDom.render)(_react2.default.createElement(_SortApp2.default, null), document.getElementById('app'));
 
@@ -26957,6 +26957,10 @@
 
 	var _SortDispatcher2 = _interopRequireDefault(_SortDispatcher);
 
+	var _Sorter = __webpack_require__(200);
+
+	var _Sorter2 = _interopRequireDefault(_Sorter);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -26992,7 +26996,9 @@
 	                    return { algo: action.id, array: state.array };
 
 	                case 'sort/sort':
-	                    return { algo: state.algo, array: this.sort(state.array) };
+	                    var sorter = new _Sorter2.default();
+	                    var sortedValues = sorter.sort(state.algo, state.array);
+	                    return { algo: state.algo, array: sortedValues };
 
 	                case 'sort/change-values':
 	                    return { algo: state.algo, array: action.values };
@@ -27322,6 +27328,10 @@
 
 	var _SortDispatcher = __webpack_require__(188);
 
+	var _Sorter = __webpack_require__(200);
+
+	var _Sorter2 = _interopRequireDefault(_Sorter);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -27361,27 +27371,27 @@
 	                        onChange: this.changeAlgo },
 	                    _react2.default.createElement(
 	                        'option',
-	                        { value: 'bucket' },
+	                        { value: _Sorter2.default.BUCKET },
 	                        'Bucket Sort'
 	                    ),
 	                    _react2.default.createElement(
 	                        'option',
-	                        { value: 'bubble' },
+	                        { value: _Sorter2.default.BUBBLE },
 	                        'Bubble Sort'
 	                    ),
 	                    _react2.default.createElement(
 	                        'option',
-	                        { value: 'selection' },
+	                        { value: _Sorter2.default.SELECTION },
 	                        'Selection Sort'
 	                    ),
 	                    _react2.default.createElement(
 	                        'option',
-	                        { value: 'insertion' },
+	                        { value: _Sorter2.default.INSERTION },
 	                        'Insertion Sort'
 	                    ),
 	                    _react2.default.createElement(
 	                        'option',
-	                        { value: 'merge' },
+	                        { value: _Sorter2.default.MERGE },
 	                        'Merge Sort'
 	                    )
 	                ),
@@ -27483,6 +27493,10 @@
 
 	var _SortDispatcher = __webpack_require__(188);
 
+	var _reactMaskedinput = __webpack_require__(194);
+
+	var _reactMaskedinput2 = _interopRequireDefault(_reactMaskedinput);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -27508,12 +27522,41 @@
 	    }
 
 	    _createClass(ValuesInput, [{
+	        key: '_onChange',
+	        value: function _onChange(event) {
+	            var value = event.target.value;
+	            var key = value.substr(value.length - 1);
+	            value = value.substring(0, value.length - 1);
+	            if (key == ',') {
+	                value += key;
+	            } else {
+	                key = parseInt(key);
+	                if (!isNaN(key)) {
+	                    value += key;
+	                }
+	            }
+
+	            this.setState({ values: value });
+	        }
+	    }, {
+	        key: '_updateValues',
+	        value: function _updateValues() {
+	            var values = this.state.values.split(",");
+	            // Make sure values are int
+	            for (var i = 0; i <= values.length - 1; i++) {
+	                values[i] = parseInt(values[i]);
+	            }
+
+	            (0, _SortDispatcher.dispatch)({ type: 'sort/change-values', values: values });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
 	                'div',
 	                null,
-	                _react2.default.createElement('input', { type: 'text',
+	                _react2.default.createElement('input', {
+	                    type: 'text',
 	                    value: this.state.values,
 	                    onChange: this._onChange
 	                }),
@@ -27523,17 +27566,6 @@
 	                    'Update Values'
 	                )
 	            );
-	        }
-	    }, {
-	        key: '_onChange',
-	        value: function _onChange(event) {
-	            this.setState({ values: event.target.value });
-	        }
-	    }, {
-	        key: '_updateValues',
-	        value: function _updateValues() {
-	            var values = this.state.values.split(",");
-	            (0, _SortDispatcher.dispatch)({ type: 'sort/change-values', values: values });
 	        }
 	    }]);
 
@@ -27549,13 +27581,758 @@
 /* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+	var React = __webpack_require__(1);
+
+	var _require = __webpack_require__(140);
+
+	var getSelection = _require.getSelection;
+	var setSelection = _require.setSelection;
+
+	var InputMask = __webpack_require__(195);
+
+	var KEYCODE_Z = 90;
+	var KEYCODE_Y = 89;
+
+	function isUndo(e) {
+	  return (e.ctrlKey || e.metaKey) && e.keyCode === (e.shiftKey ? KEYCODE_Y : KEYCODE_Z);
+	}
+
+	function isRedo(e) {
+	  return (e.ctrlKey || e.metaKey) && e.keyCode === (e.shiftKey ? KEYCODE_Z : KEYCODE_Y);
+	}
+
+	var MaskedInput = React.createClass({
+	  displayName: 'MaskedInput',
+
+	  propTypes: {
+	    mask: React.PropTypes.string.isRequired,
+
+	    formatCharacters: React.PropTypes.object,
+	    placeholderChar: React.PropTypes.string
+	  },
+
+	  getDefaultProps: function getDefaultProps() {
+	    return {
+	      value: ''
+	    };
+	  },
+
+	  componentWillMount: function componentWillMount() {
+	    var options = {
+	      pattern: this.props.mask,
+	      value: this.props.value,
+	      formatCharacters: this.props.formatCharacters
+	    };
+	    if (this.props.placeholderChar) {
+	      options.placeholderChar = this.props.placeholderChar;
+	    }
+	    this.mask = new InputMask(options);
+	  },
+
+	  componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+	    if (this.props.value !== nextProps.value) {
+	      this.mask.setValue(nextProps.value);
+	    }
+	    if (this.props.mask !== nextProps.mask) {
+	      this.mask.setPattern(nextProps.mask, { value: this.mask.getRawValue() });
+	    }
+	  },
+
+	  componentWillUpdate: function componentWillUpdate(nextProps, nextState) {
+	    if (nextProps.mask !== this.props.mask) {
+	      this._updatePattern(nextProps);
+	    }
+	  },
+
+	  componentDidUpdate: function componentDidUpdate(prevProps) {
+	    if (prevProps.mask !== this.props.mask && this.mask.selection.start) {
+	      this._updateInputSelection();
+	    }
+	  },
+
+	  _updatePattern: function _updatePattern(props) {
+	    this.mask.setPattern(props.mask, {
+	      value: this.mask.getRawValue(),
+	      selection: getSelection(this.input)
+	    });
+	  },
+
+	  _updateMaskSelection: function _updateMaskSelection() {
+	    this.mask.selection = getSelection(this.input);
+	  },
+
+	  _updateInputSelection: function _updateInputSelection() {
+	    setSelection(this.input, this.mask.selection);
+	  },
+
+	  _onChange: function _onChange(e) {
+	    // console.log('onChange', JSON.stringify(getSelection(this.input)), e.target.value)
+
+	    var maskValue = this.mask.getValue();
+	    if (e.target.value !== maskValue) {
+	      // Cut or delete operations will have shortened the value
+	      if (e.target.value.length < maskValue.length) {
+	        var sizeDiff = maskValue.length - e.target.value.length;
+	        this._updateMaskSelection();
+	        this.mask.selection.end = this.mask.selection.start + sizeDiff;
+	        this.mask.backspace();
+	      }
+	      var value = this._getDisplayValue();
+	      e.target.value = value;
+	      if (value) {
+	        this._updateInputSelection();
+	      }
+	    }
+	    if (this.props.onChange) {
+	      this.props.onChange(e);
+	    }
+	  },
+
+	  _onKeyDown: function _onKeyDown(e) {
+	    // console.log('onKeyDown', JSON.stringify(getSelection(this.input)), e.key, e.target.value)
+
+	    if (isUndo(e)) {
+	      e.preventDefault();
+	      if (this.mask.undo()) {
+	        e.target.value = this._getDisplayValue();
+	        this._updateInputSelection();
+	        if (this.props.onChange) {
+	          this.props.onChange(e);
+	        }
+	      }
+	      return;
+	    } else if (isRedo(e)) {
+	      e.preventDefault();
+	      if (this.mask.redo()) {
+	        e.target.value = this._getDisplayValue();
+	        this._updateInputSelection();
+	        if (this.props.onChange) {
+	          this.props.onChange(e);
+	        }
+	      }
+	      return;
+	    }
+
+	    if (e.key === 'Backspace') {
+	      e.preventDefault();
+	      this._updateMaskSelection();
+	      if (this.mask.backspace()) {
+	        var value = this._getDisplayValue();
+	        e.target.value = value;
+	        if (value) {
+	          this._updateInputSelection();
+	        }
+	        if (this.props.onChange) {
+	          this.props.onChange(e);
+	        }
+	      }
+	    }
+	  },
+
+	  _onKeyPress: function _onKeyPress(e) {
+	    // console.log('onKeyPress', JSON.stringify(getSelection(this.input)), e.key, e.target.value)
+
+	    // Ignore modified key presses
+	    // Ignore enter key to allow form submission
+	    if (e.metaKey || e.altKey || e.ctrlKey || e.key === 'Enter') {
+	      return;
+	    }
+
+	    e.preventDefault();
+	    this._updateMaskSelection();
+	    if (this.mask.input(e.key)) {
+	      e.target.value = this.mask.getValue();
+	      this._updateInputSelection();
+	      if (this.props.onChange) {
+	        this.props.onChange(e);
+	      }
+	    }
+	  },
+
+	  _onPaste: function _onPaste(e) {
+	    // console.log('onPaste', JSON.stringify(getSelection(this.input)), e.clipboardData.getData('Text'), e.target.value)
+
+	    e.preventDefault();
+	    this._updateMaskSelection();
+	    // getData value needed for IE also works in FF & Chrome
+	    if (this.mask.paste(e.clipboardData.getData('Text'))) {
+	      e.target.value = this.mask.getValue();
+	      // Timeout needed for IE
+	      setTimeout(this._updateInputSelection, 0);
+	      if (this.props.onChange) {
+	        this.props.onChange(e);
+	      }
+	    }
+	  },
+
+	  _getDisplayValue: function _getDisplayValue() {
+	    var value = this.mask.getValue();
+	    return value === this.mask.emptyValue ? '' : value;
+	  },
+
+	  focus: function focus() {
+	    this.input.focus();
+	  },
+
+	  blur: function blur() {
+	    this.input.blur();
+	  },
+
+	  render: function render() {
+	    var _this = this;
+
+	    var _props = this.props;
+	    var mask = _props.mask;
+	    var formatCharacters = _props.formatCharacters;
+	    var size = _props.size;
+	    var placeholder = _props.placeholder;
+
+	    var props = _objectWithoutProperties(_props, ['mask', 'formatCharacters', 'size', 'placeholder']);
+
+	    var patternLength = this.mask.pattern.length;
+	    return React.createElement('input', _extends({}, props, {
+	      ref: function (r) {
+	        return _this.input = r;
+	      },
+	      maxLength: patternLength,
+	      onChange: this._onChange,
+	      onKeyDown: this._onKeyDown,
+	      onKeyPress: this._onKeyPress,
+	      onPaste: this._onPaste,
+	      placeholder: placeholder || this.mask.emptyValue,
+	      size: size || patternLength,
+	      value: this._getDisplayValue()
+	    }));
+	  }
+	});
+
+	module.exports = MaskedInput;
+
+/***/ },
+/* 195 */
+/***/ function(module, exports) {
+
+	'use strict'
+
+	function extend(dest, src) {
+	  if (src) {
+	    var props = Object.keys(src)
+	    for (var i = 0, l = props.length; i < l ; i++) {
+	      dest[props[i]] = src[props[i]]
+	    }
+	  }
+	  return dest
+	}
+
+	function copy(obj) {
+	  return extend({}, obj)
+	}
+
+	/**
+	 * Merge an object defining format characters into the defaults.
+	 * Passing null/undefined for en existing format character removes it.
+	 * Passing a definition for an existing format character overrides it.
+	 * @param {?Object} formatCharacters.
+	 */
+	function mergeFormatCharacters(formatCharacters) {
+	  var merged = copy(DEFAULT_FORMAT_CHARACTERS)
+	  if (formatCharacters) {
+	    var chars = Object.keys(formatCharacters)
+	    for (var i = 0, l = chars.length; i < l ; i++) {
+	      var char = chars[i]
+	      if (formatCharacters[char] == null) {
+	        delete merged[char]
+	      }
+	      else {
+	        merged[char] = formatCharacters[char]
+	      }
+	    }
+	  }
+	  return merged
+	}
+
+	var ESCAPE_CHAR = '\\'
+
+	var DIGIT_RE = /^\d$/
+	var LETTER_RE = /^[A-Za-z]$/
+	var ALPHANNUMERIC_RE = /^[\dA-Za-z]$/
+
+	var DEFAULT_PLACEHOLDER_CHAR = '_'
+	var DEFAULT_FORMAT_CHARACTERS = {
+	  '*': {
+	    validate: function(char) { return ALPHANNUMERIC_RE.test(char) }
+	  },
+	  '1': {
+	    validate: function(char) { return DIGIT_RE.test(char) }
+	  },
+	  'a': {
+	    validate: function(char) { return LETTER_RE.test(char) }
+	  },
+	  'A': {
+	    validate: function(char) { return LETTER_RE.test(char) },
+	    transform: function(char) { return char.toUpperCase() }
+	  },
+	  '#': {
+	    validate: function(char) { return ALPHANNUMERIC_RE.test(char) },
+	    transform: function(char) { return char.toUpperCase() }
+	  }
+	}
+
+	/**
+	 * @param {string} source
+	 * @patam {?Object} formatCharacters
+	 */
+	function Pattern(source, formatCharacters, placeholderChar) {
+	  if (!(this instanceof Pattern)) {
+	    return new Pattern(source, formatCharacters, placeholderChar)
+	  }
+
+	  /** Placeholder character */
+	  this.placeholderChar = placeholderChar || DEFAULT_PLACEHOLDER_CHAR
+	  /** Format character definitions. */
+	  this.formatCharacters = formatCharacters || DEFAULT_FORMAT_CHARACTERS
+	  /** Pattern definition string with escape characters. */
+	  this.source = source
+	  /** Pattern characters after escape characters have been processed. */
+	  this.pattern = []
+	  /** Length of the pattern after escape characters have been processed. */
+	  this.length = 0
+	  /** Index of the first editable character. */
+	  this.firstEditableIndex = null
+	  /** Index of the last editable character. */
+	  this.lastEditableIndex = null
+
+	  /** Lookup for indices of editable characters in the pattern. */
+	  this._editableIndices = {}
+
+	  this._parse()
+	}
+
+	Pattern.prototype._parse = function parse() {
+	  var sourceChars = this.source.split('')
+	  var patternIndex = 0
+	  var pattern = []
+
+	  for (var i = 0, l = sourceChars.length; i < l; i++) {
+	    var char = sourceChars[i]
+	    if (char === ESCAPE_CHAR) {
+	      if (i === l - 1) {
+	        throw new Error('InputMask: pattern ends with a raw ' + ESCAPE_CHAR)
+	      }
+	      char = sourceChars[++i]
+	    }
+	    else if (char in this.formatCharacters) {
+	      if (this.firstEditableIndex === null) {
+	        this.firstEditableIndex = patternIndex
+	      }
+	      this.lastEditableIndex = patternIndex
+	      this._editableIndices[patternIndex] = true
+	    }
+
+	    pattern.push(char)
+	    patternIndex++
+	  }
+
+	  if (this.firstEditableIndex === null) {
+	    throw new Error(
+	      'InputMask: pattern "' + this.source + '" does not contain any editable characters.'
+	    )
+	  }
+
+	  this.pattern = pattern
+	  this.length = pattern.length
+	}
+
+	/**
+	 * @param {Array<string>} value
+	 * @return {Array<string>}
+	 */
+	Pattern.prototype.formatValue = function format(value) {
+	  var valueBuffer = new Array(this.length)
+	  var valueIndex = 0
+
+	  for (var i = 0, l = this.length; i < l ; i++) {
+	    if (this.isEditableIndex(i)) {
+	      valueBuffer[i] = (value.length > valueIndex && this.isValidAtIndex(value[valueIndex], i)
+	                        ? this.transform(value[valueIndex], i)
+	                        : this.placeholderChar)
+	      valueIndex++
+	    }
+	    else {
+	      valueBuffer[i] = this.pattern[i]
+	      // Also allow the value to contain static values from the pattern by
+	      // advancing its index.
+	      if (value.length > valueIndex && value[valueIndex] === this.pattern[i]) {
+	        valueIndex++
+	      }
+	    }
+	  }
+
+	  return valueBuffer
+	}
+
+	/**
+	 * @param {number} index
+	 * @return {boolean}
+	 */
+	Pattern.prototype.isEditableIndex = function isEditableIndex(index) {
+	  return !!this._editableIndices[index]
+	}
+
+	/**
+	 * @param {string} char
+	 * @param {number} index
+	 * @return {boolean}
+	 */
+	Pattern.prototype.isValidAtIndex = function isValidAtIndex(char, index) {
+	  return this.formatCharacters[this.pattern[index]].validate(char)
+	}
+
+	Pattern.prototype.transform = function transform(char, index) {
+	  var format = this.formatCharacters[this.pattern[index]]
+	  return typeof format.transform == 'function' ? format.transform(char) : char
+	}
+
+	function InputMask(options) {
+	  if (!(this instanceof InputMask)) { return new InputMask(options) }
+
+	  options = extend({
+	    formatCharacters: null,
+	    pattern: null,
+	    placeholderChar: DEFAULT_PLACEHOLDER_CHAR,
+	    selection: {start: 0, end: 0},
+	    value: ''
+	  }, options)
+
+	  if (options.pattern == null) {
+	    throw new Error('InputMask: you must provide a pattern.')
+	  }
+
+	  if (options.placeholderChar.length !== 1) {
+	    throw new Error('InputMask: placeholderChar should be a single character.')
+	  }
+
+	  this.placeholderChar = options.placeholderChar
+	  this.formatCharacters = mergeFormatCharacters(options.formatCharacters)
+	  this.setPattern(options.pattern, {
+	    value: options.value,
+	    selection: options.selection
+	  })
+	}
+
+	// Editing
+
+	/**
+	 * Applies a single character of input based on the current selection.
+	 * @param {string} char
+	 * @return {boolean} true if a change has been made to value or selection as a
+	 *   result of the input, false otherwise.
+	 */
+	InputMask.prototype.input = function input(char) {
+	  // Ignore additional input if the cursor's at the end of the pattern
+	  if (this.selection.start === this.selection.end &&
+	      this.selection.start === this.pattern.length) {
+	    return false
+	  }
+
+	  var selectionBefore = copy(this.selection)
+	  var valueBefore = this.getValue()
+
+	  var inputIndex = this.selection.start
+
+	  // If the cursor or selection is prior to the first editable character, make
+	  // sure any input given is applied to it.
+	  if (inputIndex < this.pattern.firstEditableIndex) {
+	    inputIndex = this.pattern.firstEditableIndex
+	  }
+
+	  // Bail out or add the character to input
+	  if (this.pattern.isEditableIndex(inputIndex)) {
+	    if (!this.pattern.isValidAtIndex(char, inputIndex)) {
+	      return false
+	    }
+	    this.value[inputIndex] = this.pattern.transform(char, inputIndex)
+	  }
+
+	  // If multiple characters were selected, blank the remainder out based on the
+	  // pattern.
+	  var end = this.selection.end - 1
+	  while (end > inputIndex) {
+	    if (this.pattern.isEditableIndex(end)) {
+	      this.value[end] = this.placeholderChar
+	    }
+	    end--
+	  }
+
+	  // Advance the cursor to the next character
+	  this.selection.start = this.selection.end = inputIndex + 1
+
+	  // Skip over any subsequent static characters
+	  while (this.pattern.length > this.selection.start &&
+	         !this.pattern.isEditableIndex(this.selection.start)) {
+	    this.selection.start++
+	    this.selection.end++
+	  }
+
+	  // History
+	  if (this._historyIndex != null) {
+	    // Took more input after undoing, so blow any subsequent history away
+	    console.log('splice(', this._historyIndex, this._history.length - this._historyIndex, ')')
+	    this._history.splice(this._historyIndex, this._history.length - this._historyIndex)
+	    this._historyIndex = null
+	  }
+	  if (this._lastOp !== 'input' ||
+	      selectionBefore.start !== selectionBefore.end ||
+	      this._lastSelection !== null && selectionBefore.start !== this._lastSelection.start) {
+	    this._history.push({value: valueBefore, selection: selectionBefore, lastOp: this._lastOp})
+	  }
+	  this._lastOp = 'input'
+	  this._lastSelection = copy(this.selection)
+
+	  return true
+	}
+
+	/**
+	 * Attempts to delete from the value based on the current cursor position or
+	 * selection.
+	 * @return {boolean} true if the value or selection changed as the result of
+	 *   backspacing, false otherwise.
+	 */
+	InputMask.prototype.backspace = function backspace() {
+	  // If the cursor is at the start there's nothing to do
+	  if (this.selection.start === 0 && this.selection.end === 0) {
+	    return false
+	  }
+
+	  var selectionBefore = copy(this.selection)
+	  var valueBefore = this.getValue()
+
+	  // No range selected - work on the character preceding the cursor
+	  if (this.selection.start === this.selection.end) {
+	    if (this.pattern.isEditableIndex(this.selection.start - 1)) {
+	      this.value[this.selection.start - 1] = this.placeholderChar
+	    }
+	    this.selection.start--
+	    this.selection.end--
+	  }
+	  // Range selected - delete characters and leave the cursor at the start of the selection
+	  else {
+	    var end = this.selection.end - 1
+	    while (end >= this.selection.start) {
+	      if (this.pattern.isEditableIndex(end)) {
+	        this.value[end] = this.placeholderChar
+	      }
+	      end--
+	    }
+	    this.selection.end = this.selection.start
+	  }
+
+	  // History
+	  if (this._historyIndex != null) {
+	    // Took more input after undoing, so blow any subsequent history away
+	    this._history.splice(this._historyIndex, this._history.length - this._historyIndex)
+	  }
+	  if (this._lastOp !== 'backspace' ||
+	      selectionBefore.start !== selectionBefore.end ||
+	      this._lastSelection !== null && selectionBefore.start !== this._lastSelection.start) {
+	    this._history.push({value: valueBefore, selection: selectionBefore, lastOp: this._lastOp})
+	  }
+	  this._lastOp = 'backspace'
+	  this._lastSelection = copy(this.selection)
+
+	  return true
+	}
+
+	/**
+	 * Attempts to paste a string of input at the current cursor position or over
+	 * the top of the current selection.
+	 * Invalid content at any position will cause the paste to be rejected, and it
+	 * may contain static parts of the mask's pattern.
+	 * @param {string} input
+	 * @return {boolean} true if the paste was successful, false otherwise.
+	 */
+	InputMask.prototype.paste = function paste(input) {
+	  // This is necessary because we're just calling input() with each character
+	  // and rolling back if any were invalid, rather than checking up-front.
+	  var initialState = {
+	    value: this.value.slice(),
+	    selection: copy(this.selection),
+	    _lastOp: this._lastOp,
+	    _history: this._history.slice(),
+	    _historyIndex: this._historyIndex,
+	    _lastSelection: copy(this._lastSelection)
+	  }
+
+	  // If there are static characters at the start of the pattern and the cursor
+	  // or selection is within them, the static characters must match for a valid
+	  // paste.
+	  if (this.selection.start < this.pattern.firstEditableIndex) {
+	    for (var i = 0, l = this.pattern.firstEditableIndex - this.selection.start; i < l; i++) {
+	      if (input.charAt(i) !== this.pattern.pattern[i]) {
+	        return false
+	      }
+	    }
+
+	    // Continue as if the selection and input started from the editable part of
+	    // the pattern.
+	    input = input.substring(this.pattern.firstEditableIndex - this.selection.start)
+	    this.selection.start = this.pattern.firstEditableIndex
+	  }
+
+	  for (i = 0, l = input.length;
+	       i < l && this.selection.start <= this.pattern.lastEditableIndex;
+	       i++) {
+	    var valid = this.input(input.charAt(i))
+	    // Allow static parts of the pattern to appear in pasted input - they will
+	    // already have been stepped over by input(), so verify that the value
+	    // deemed invalid by input() was the expected static character.
+	    if (!valid) {
+	      if (this.selection.start > 0) {
+	        // XXX This only allows for one static character to be skipped
+	        var patternIndex = this.selection.start - 1
+	        if (!this.pattern.isEditableIndex(patternIndex) &&
+	            input.charAt(i) === this.pattern.pattern[patternIndex]) {
+	          continue
+	        }
+	      }
+	      extend(this, initialState)
+	      return false
+	    }
+	  }
+
+	  return true
+	}
+
+	// History
+
+	InputMask.prototype.undo = function undo() {
+	  // If there is no history, or nothing more on the history stack, we can't undo
+	  if (this._history.length === 0 || this._historyIndex === 0) {
+	    return false
+	  }
+
+	  var historyItem
+	  if (this._historyIndex == null) {
+	    // Not currently undoing, set up the initial history index
+	    this._historyIndex = this._history.length - 1
+	    historyItem = this._history[this._historyIndex]
+	    // Add a new history entry if anything has changed since the last one, so we
+	    // can redo back to the initial state we started undoing from.
+	    var value = this.getValue()
+	    if (historyItem.value !== value ||
+	        historyItem.selection.start !== this.selection.start ||
+	        historyItem.selection.end !== this.selection.end) {
+	      this._history.push({value: value, selection: copy(this.selection), lastOp: this._lastOp, startUndo: true})
+	    }
+	  }
+	  else {
+	    historyItem = this._history[--this._historyIndex]
+	  }
+
+	  this.value = historyItem.value.split('')
+	  this.selection = historyItem.selection
+	  this._lastOp = historyItem.lastOp
+	  return true
+	}
+
+	InputMask.prototype.redo = function redo() {
+	  if (this._history.length === 0 || this._historyIndex == null) {
+	    return false
+	  }
+	  var historyItem = this._history[++this._historyIndex]
+	  // If this is the last history item, we're done redoing
+	  if (this._historyIndex === this._history.length - 1) {
+	    this._historyIndex = null
+	    // If the last history item was only added to start undoing, remove it
+	    if (historyItem.startUndo) {
+	      this._history.pop()
+	    }
+	  }
+	  this.value = historyItem.value.split('')
+	  this.selection = historyItem.selection
+	  this._lastOp = historyItem.lastOp
+	  return true
+	}
+
+	// Getters & setters
+
+	InputMask.prototype.setPattern = function setPattern(pattern, options) {
+	  options = extend({
+	    selection: {start: 0, end: 0},
+	    value: ''
+	  }, options)
+	  this.pattern = new Pattern(pattern, this.formatCharacters, this.placeholderChar)
+	  this.setValue(options.value)
+	  this.emptyValue = this.pattern.formatValue([]).join('')
+	  this.selection = options.selection
+	  this._resetHistory()
+	}
+
+	InputMask.prototype.setSelection = function setSelection(selection) {
+	  this.selection = copy(selection)
+	  if (this.selection.start === this.selection.end) {
+	    if (this.selection.start < this.pattern.firstEditableIndex) {
+	      this.selection.start = this.selection.end = this.pattern.firstEditableIndex
+	      return true
+	    }
+	    if (this.selection.end > this.pattern.lastEditableIndex + 1) {
+	      this.selection.start = this.selection.end = this.pattern.lastEditableIndex + 1
+	      return true
+	    }
+	  }
+	  return false
+	}
+
+	InputMask.prototype.setValue = function setValue(value) {
+	  if (value == null) {
+	    value = ''
+	  }
+	  this.value = this.pattern.formatValue(value.split(''))
+	}
+
+	InputMask.prototype.getValue = function getValue() {
+	  return this.value.join('')
+	}
+
+	InputMask.prototype.getRawValue = function getRawValue() {
+	  var rawValue = []
+	  for (var i = 0; i < this.value.length; i++) {
+	    if (this.pattern._editableIndices[i] === true) {
+	      rawValue.push(this.value[i])
+	    }
+	  }
+	  return rawValue.join('')
+	}
+
+	InputMask.prototype._resetHistory = function _resetHistory() {
+	  this._history = []
+	  this._historyIndex = null
+	  this._lastOp = null
+	  this._lastSelection = copy(this.selection)
+	}
+
+	InputMask.Pattern = Pattern
+
+	module.exports = InputMask
+
+
+/***/ },
+/* 196 */
+/***/ function(module, exports, __webpack_require__) {
+
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
 	// load the styles
-	var content = __webpack_require__(195);
+	var content = __webpack_require__(197);
 	if(typeof content === 'string') content = [[module.id, content, '']];
 	// add the styles to the DOM
-	var update = __webpack_require__(197)(content, {});
+	var update = __webpack_require__(199)(content, {});
 	if(content.locals) module.exports = content.locals;
 	// Hot Module Replacement
 	if(false) {
@@ -27572,10 +28349,10 @@
 	}
 
 /***/ },
-/* 195 */
+/* 197 */
 /***/ function(module, exports, __webpack_require__) {
 
-	exports = module.exports = __webpack_require__(196)();
+	exports = module.exports = __webpack_require__(198)();
 	// imports
 
 
@@ -27586,7 +28363,7 @@
 
 
 /***/ },
-/* 196 */
+/* 198 */
 /***/ function(module, exports) {
 
 	/*
@@ -27642,7 +28419,7 @@
 
 
 /***/ },
-/* 197 */
+/* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*
@@ -27892,6 +28669,123 @@
 			URL.revokeObjectURL(oldSrc);
 	}
 
+
+/***/ },
+/* 200 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var BUCKET = "bucket",
+	    BUBBLE = "bubble",
+	    SELECTION = "SELECTION",
+	    INSERTION = "INSERTION",
+	    MERGE = "MERGE";
+
+	var Sorter = function () {
+	    function Sorter() {
+	        _classCallCheck(this, Sorter);
+	    }
+
+	    _createClass(Sorter, [{
+	        key: "sort",
+	        value: function sort(algo, array) {
+	            switch (algo) {
+	                case BUCKET:
+	                    return this.bucketSort(array);
+	                case BUBBLE:
+	                    return this.bubbleSort(array);
+	                case SELECTION:
+	                    return this.selectionSort(array);
+	                case INSERTION:
+	                    return this.insertionSort(array);
+	                case MERGE:
+	                    return this.mergeSort(array);
+	            }
+	        }
+	    }, {
+	        key: "bucketSort",
+	        value: function bucketSort(array) {
+	            // Create bucket array
+	            var bucketArray = new Array(Math.max.apply(Math, _toConsumableArray(array)) + 1);
+	            // Fill bucket with zeros
+	            bucketArray.fill(0);
+	            // Count in bucket
+	            array.forEach(function (v) {
+	                ++bucketArray[v];
+	            });
+	            // Recombine ordered array
+	            var orderedArray = new Array(array.length);
+	            bucketArray.forEach(function (v, i) {
+	                while (v > 0) {
+	                    orderedArray.push(i);
+	                    --v;
+	                }
+	            });
+
+	            return orderedArray;
+	        }
+	    }, {
+	        key: "bubbleSort",
+	        value: function bubbleSort(array) {
+	            var orderedArray = array.slice();
+	            // Compare each element with the next one
+	            for (var i = orderedArray.length - 1; i >= 0; i--) {
+
+	                for (var j = 1; j <= i; j++) {
+	                    // Switch order if first is greater
+	                    if (orderedArray[j - 1] > orderedArray[j]) {
+
+	                        var temp = orderedArray[j - 1];
+	                        orderedArray[j - 1] = orderedArray[j];
+	                        orderedArray[j] = temp;
+	                    }
+	                }
+	            }
+
+	            return orderedArray;
+	        }
+	    }], [{
+	        key: "BUCKET",
+	        get: function get() {
+	            return BUCKET;
+	        }
+	    }, {
+	        key: "BUBBLE",
+	        get: function get() {
+	            return BUBBLE;
+	        }
+	    }, {
+	        key: "SELECTION",
+	        get: function get() {
+	            return SELECTION;
+	        }
+	    }, {
+	        key: "INSERTION",
+	        get: function get() {
+	            return INSERTION;
+	        }
+	    }, {
+	        key: "MERGE",
+	        get: function get() {
+	            return MERGE;
+	        }
+	    }]);
+
+	    return Sorter;
+	}();
+
+	exports.default = Sorter;
 
 /***/ }
 /******/ ]);

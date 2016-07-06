@@ -1,6 +1,7 @@
 import {ReduceStore} from 'flux/utils';
 import type {Action} from './SortActions';
 import SortDispatcher from './SortDispatcher';
+import Sorter from './Sorter';
 
 class SortStore extends ReduceStore {
     
@@ -17,7 +18,9 @@ class SortStore extends ReduceStore {
                 return { algo: action.id, array: state.array };
                 
             case 'sort/sort':
-                return { algo: state.algo, array: this.sort(state.array) };
+                var sorter = new Sorter();
+                var sortedValues = sorter.sort(state.algo, state.array);
+                return { algo: state.algo, array: sortedValues };
                 
             case 'sort/change-values':
                 return { algo: state.algo, array: action.values };
